@@ -5,7 +5,13 @@ metadata:
   namespace: default
 spec:
   tasks:
-    # - name: provision-central
+    - name: provision-central
+      taskRef:
+        kind: Task
+        name: provision-central
+      workspaces:
+        - name: binaries
+          workspace: bin
     # - name: authenticate-central
     # - name: wait-for-scanner-init
     # - name: run-image-scan
@@ -14,6 +20,7 @@ spec:
     - name: image
       type: string
       default: alpine
-  finally:
+  # finally:
     # - name: destroy-central
-
+  workspaces:
+    - name: bin
