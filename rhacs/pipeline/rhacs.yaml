@@ -9,6 +9,11 @@ spec:
       taskRef:
         kind: Task
         name: provision-central
+      params:
+        - name: cloud-account-id
+          value: $(params.cloud-account-id)
+        - name: pipelinerun-uid
+          value: $(context.pipelineRun.uid)
       workspaces:
         - name: binaries
           workspace: bin
@@ -20,6 +25,8 @@ spec:
     - name: image
       type: string
       default: alpine
+    - name: cloud-account-id
+      type: string
   # finally:
     # - name: destroy-central
   workspaces:
