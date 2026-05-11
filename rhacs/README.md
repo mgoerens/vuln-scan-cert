@@ -8,6 +8,8 @@ Requirements TBD
 
 ### Install OpenShift Pipelines operator (Tekton)
 
+https://docs.redhat.com/en/documentation/red_hat_openshift_pipelines/1.21/html/installing_and_configuring/installing-pipelines
+
 ### Red Hat SSO Service Account
 
 - Follow this link to create a Red Hat Service Account: https://console.redhat.com/iam/service-accounts/
@@ -39,3 +41,55 @@ $ oc start-build python3-with-requests --from-dir=./python-with-requests --follo
 The image is now available in the internal registry `image-registry.openshift-image-registry.svc:5000/default/python3-with-requests:latest`.
 
 It is used in steps that run Python code and require the `requests` module.
+
+## Usage
+
+Start a pipeline run either via CLI or via Manifest file
+
+### `tkn` CLI
+
+```
+tkn pipeline start rhacs \
+  -n default \
+  --param image=alpine \
+  -w name=bin,volumeClaimTemplateFile=./pipeline/pvc-template.yaml \
+  --pipeline-timeout 1h \
+  --showlog
+```
+
+### Apply PipelineRun YAML
+
+This is an alternative to the `tkn` CLI.
+
+```yaml
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: rhacs-run
+  namespace: default
+spec:
+  pipelineRef:
+    name: rhacs
+  params:
+  - name: image
+    value: alpine
+  timeouts:
+    pipeline: 1h0m0s
+  workspaces:
+    - name: bin
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: gp3-csi
+          volumeMode: Filesystem
+```
+
+Apply and view logs:
+
+```bash
+oc apply -f run-rhacs-pr.yaml -n default
+tkn pipelinerun logs -f rhacs-cli -n default
+```
