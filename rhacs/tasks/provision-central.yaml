@@ -10,7 +10,8 @@ spec:
     - name: pipelinerun-uid
       type: string
   results:
-    - name: ocm-id
+    - name: central-id
+      type: string
       description: Name / ID of provisionned central
   stepTemplate:
     computeResources: {}
@@ -67,8 +68,6 @@ spec:
         import os
         import requests
 
-        print(os.getenv("PIPELINERUN_UID"))
-
         API_URL = "https://api.openshift.com/api/rhacs/v1/centrals?async=true"
         CENTRAL_REGION = "eu-west-1"
         central_name_suffix = os.getenv("PIPELINERUN_UID").split("-")[0]
@@ -102,6 +101,8 @@ spec:
         print(f"Central ID: {central_id}")
         with open('$(step.results.central-id.path)', 'w') as f:
           f.write(central_id)
+        with open('$(results.central-id.path)', 'w') as f:
+          f.write(central_id)
 
     - image: image-registry.openshift-image-registry.svc:5000/default/python3-with-requests:latest
       name: wait-for-central-ready
@@ -113,14 +114,14 @@ spec:
         headers = {"Authorization": "Bearer " + os.getenv("OCM_TOKEN"), "Content-Type": "application/json"}
         central_request_status = None
 
-        while(central_request_status != "ready"):
+        while central_request_status != "ready":
           print("Querying central status")
           response = requests.get(f"https://api.openshift.com/api/rhacs/v1/centrals/{os.getenv("CENTRAL_ID")}", headers=headers)
           central_request = response.json()
           print(central_request)
           central_request_status = central_request.get("status")
 
-          if (central_request_status != "ready"):
+          if central_request_status != "ready":
             print("Central is not ready yet, retrying in 10 seconds...")
             time.sleep(10)
 

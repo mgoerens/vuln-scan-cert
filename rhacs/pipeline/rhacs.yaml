@@ -27,7 +27,17 @@ spec:
       default: alpine
     - name: cloud-account-id
       type: string
-  # finally:
-    # - name: destroy-central
+  finally:
+    - name: destroy-central
+      taskRef:
+        kind: Task
+        name: destroy-central
+      params:
+        - name: central-id
+          value: $(tasks.provision-central.results.central-id)
+      workspaces:
+        - name: binaries
+          workspace: bin
+
   workspaces:
     - name: bin
