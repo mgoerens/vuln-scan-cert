@@ -4,6 +4,11 @@ metadata:
   name: provision-central
   namespace: default
 spec:
+  params:
+    - name: cloud-account-id
+      type: string
+    - name: pipelinerun-uid
+      type: string
   results:
     - name: ocm-id
       description: Name / ID of provisionned central
@@ -56,7 +61,7 @@ spec:
         - name: PIPELINERUN_UID
           value: $(params.pipelinerun-uid)
         - name: CLOUD_ACCOUNT_ID
-          value: ${params.cloud-account-id}
+          value: $(params.cloud-account-id)
       script: |
         #!/bin/env python
         import os
@@ -75,7 +80,7 @@ spec:
           'cloud_provider': 'aws',
           'multi_az': True,
           'region': CENTRAL_REGION,
-          'cloud_account_id': "876430114552",
+          'cloud_account_id': os.getenv("CLOUD_ACCOUNT_ID"),
         }
 
         print(f"Sending Central creation request with name {central_name}")
@@ -85,10 +90,6 @@ spec:
           json=payload,
           headers=headers,
         )
-
-        print(response.content)
-        print(response.text)
-        print(response.reason)
 
         if response.status_code != 200:
           print(f"Return code: {response.status_code}")
