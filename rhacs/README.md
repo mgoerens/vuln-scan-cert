@@ -30,6 +30,18 @@ $ oc apply -f tasks/
 $ oc apply -f pipeline/
 ```
 
+### Increase the maximum Task result size using sidecar logs
+
+Documentation: https://tekton.dev/docs/pipelines/additional-configs/#enabling-larger-results-using-sidecar-logs
+
+```shell
+$ oc apply -f enable-log-access-to-controller/rbac.yaml
+$ oc patch cm feature-flags -n openshift-pipelines -p '{"data":{"results-from":"sidecar-logs"}}'
+$ oc patch cm feature-flags -n openshift-pipelines -p '{"data":{"max-result-size":"8192"}}'
+```
+
+This is required due to the size of the `ROX_API_TOKEN`, exceeding the default 4096 bytes.
+
 ### Build Container images used in python steps
 
 ```shell
