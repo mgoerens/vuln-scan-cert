@@ -68,12 +68,16 @@ Start a pipeline run either via CLI or via Manifest file
 
 ### `tkn` CLI
 
-```
-tkn pipeline start rhacs \
+```shell
+$ export CLOUD_ACCOUNT_ID="REPLACE_ME"
+$ tkn pipeline start rhacs \
   -n default \
   --param image=alpine \
-  -w name=bin,volumeClaimTemplateFile=./pipeline/pvc-template.yaml \
-  --pipeline-timeout 1h \
+  --param service-account-creds-secret=rh-openid-credentials \
+  --param cloud-account-id=$CLOUD_ACCOUNT_ID \
+  --param central-aws-region=eu-west-1 \
+  -w name=bin,volumeClaimTemplateFile=./pipeline/pvc-template.yaml
+  --pipeline-timeout 2h
   --showlog
 ```
 
@@ -85,16 +89,23 @@ This is an alternative to the `tkn` CLI.
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: rhacs-run
+  name: my-rhacs-run
   namespace: default
 spec:
   pipelineRef:
     name: rhacs
+spec:
   params:
+  - name: central-aws-region
+    value: eu-west-1
+  - name: cloud-account-id
+    value: "REPLACE_ME"
   - name: image
     value: alpine
+  - name: service-account-creds-secret
+    value: rh-openid-credentials
   timeouts:
-    pipeline: 1h0m0s
+    pipeline: 2h0m0s
   workspaces:
     - name: bin
       volumeClaimTemplate:
