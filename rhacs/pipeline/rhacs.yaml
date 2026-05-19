@@ -10,8 +10,12 @@ spec:
         kind: Task
         name: provision-central
       params:
+        - name: service-account-creds-secret
+          value: $(params.service-account-creds-secret)
         - name: cloud-account-id
           value: $(params.cloud-account-id)
+        - name: central-aws-region
+          value: $(params.central-aws-region)
         - name: pipelinerun-uid
           value: $(context.pipelineRun.uid)
       workspaces:
@@ -48,9 +52,19 @@ spec:
       type: string
       description: Image to scan - currently unused
       default: alpine
+    - name: service-account-creds-secret
+      type: string
+      description: Name of Secret containing Service Account credentials
+      default: rh-openid-credentials
     - name: cloud-account-id
       type: string
       description: AWS ID used for Central provisioning via ACS
+    - name: central-aws-region
+      type: string
+      description: AWS Region where to provision Central
+      enum:
+        - "eu-west-1"
+        - "us-east-1"
   finally:
     - name: destroy-central
       taskRef:

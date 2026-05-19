@@ -5,9 +5,15 @@ metadata:
   namespace: default
 spec:
   params:
+    - name: service-account-creds-secret
+      type: string
+      description: Name of Secret containing Service Account credentials
     - name: cloud-account-id
       type: string
       description: AWS ID used for Central provisioning via ACS CS
+    - name: central-aws-region
+      type: string
+      description: AWS Region where to provision Central
     - name: pipelinerun-uid
       type: string
       description: Unique pipelineRun identifier, used to craft a unique Central name.
@@ -51,12 +57,12 @@ spec:
         - name: CLIENT_ID
           valueFrom:
             secretKeyRef:
-              name: rh-openid-credentials
+              name: $(params.service-account-creds-secret)
               key: "client-id"
         - name: CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: rh-openid-credentials
+              name: $(params.service-account-creds-secret)
               key: "client-secret"
       workingDir: $(workspaces.binaries.path)
     - image: image-registry.openshift-image-registry.svc:5000/default/python3-with-requests:latest
@@ -72,13 +78,14 @@ spec:
           value: $(params.pipelinerun-uid)
         - name: CLOUD_ACCOUNT_ID
           value: $(params.cloud-account-id)
+        - name: CENTRAL_AWS_REGION
+          value: $(params.central-aws-region)
       script: |
         #!/bin/env python
         import os
         import requests
 
         API_URL = "https://api.openshift.com/api/rhacs/v1/centrals?async=true"
-        CENTRAL_REGION = "eu-west-1"
         central_name_suffix = os.getenv("PIPELINERUN_UID").split("-")[0]
         central_name = f"vuln-scan-cert-{central_name_suffix}"
 
@@ -87,7 +94,7 @@ spec:
           'name': central_name,
           'cloud_provider': 'aws',
           'multi_az': True,
-          'region': CENTRAL_REGION,
+          'region': os.getenv("CENTRAL_AWS_REGION"),
           'cloud_account_id': os.getenv("CLOUD_ACCOUNT_ID"),
         }
 
@@ -105,7 +112,7 @@ spec:
           response.raise_for_status()
 
         central_request = response.json()
-        central_id = central_request["id"]
+        central_id = central_request.get("id")
         print("Central creation request successfully sent")
         print(f"Central ID: {central_id}")
         with open('$(step.results.central-id.path)', 'w') as f:
