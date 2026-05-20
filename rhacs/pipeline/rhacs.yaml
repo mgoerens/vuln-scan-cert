@@ -32,6 +32,8 @@ spec:
           value: $(tasks.provision-central.results.ocm-token)
         - name: rox-endpoint
           value: $(tasks.provision-central.results.rox-endpoint)
+      runAfter:
+        - provision-central
       workspaces:
         - name: binaries
           workspace: bin
@@ -44,6 +46,8 @@ spec:
           value: $(tasks.provision-central.results.rox-endpoint)
         - name: rox-api-token
           value: $(tasks.authenticate-central.results.rox-api-token)
+      runAfter:
+        - authenticate-central
 
     # - name: run-image-scan
     # - name: upload-result
