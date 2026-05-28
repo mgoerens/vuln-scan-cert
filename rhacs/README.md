@@ -1,6 +1,6 @@
 # Vulnerability scanner certification pipeline for RHACS
 
-## Pre-requisites 
+## Pre-requisites
 
 ### Deploy OCP cluster
 
@@ -76,6 +76,7 @@ $ tkn pipeline start rhacs \
   --param service-account-creds-secret=rh-openid-credentials \
   --param cloud-account-id=$CLOUD_ACCOUNT_ID \
   --param central-aws-region=eu-west-1 \
+  --param existing-central-id="" \
   --param destroy-central=true \
   -w name=bin,volumeClaimTemplateFile=./pipeline/pvc-template.yaml
   --pipeline-timeout 2h
@@ -83,6 +84,8 @@ $ tkn pipeline start rhacs \
 ```
 
 Set `--param destroy-central=false` if you want to keep the deployed Central around for debugging or later use.
+
+Set `--param existing-central-id=<CENTRAL_ID>` to reuse an existing Central. In that mode, no new Central is created, and the finally cleanup step will not delete that existing Central.
 
 ### Apply PipelineRun YAML
 
@@ -107,6 +110,8 @@ spec:
     value: alpine
   - name: service-account-creds-secret
     value: rh-openid-credentials
+  - name: existing-central-id
+    value: ""
   - name: destroy-central
     value: "true"
   timeouts:

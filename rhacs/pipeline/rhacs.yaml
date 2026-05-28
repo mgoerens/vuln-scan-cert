@@ -15,6 +15,8 @@ spec:
           value: $(params.cloud-account-id)
         - name: central-aws-region
           value: $(params.central-aws-region)
+        - name: existing-central-id
+          value: $(params.existing-central-id)
         - name: pipelinerun-uid
           value: $(context.pipelineRun.uid)
       workspaces:
@@ -25,8 +27,6 @@ spec:
         kind: Task
         name: authenticate-central
       params:
-        - name: central-id
-          value: $(tasks.provision-central.results.central-id)
         - name: ocm-token
           value: $(tasks.provision-central.results.ocm-token)
         - name: rox-endpoint
@@ -60,13 +60,19 @@ spec:
       default: rh-openid-credentials
     - name: cloud-account-id
       type: string
-      description: AWS ID used for Central provisioning via ACS
+      description: AWS ID used for Central provisioning via ACS (required when creating a new Central)
+      default: ""
     - name: central-aws-region
       type: string
       description: AWS Region where to provision Central
+      default: "eu-west-1"
       enum:
         - "eu-west-1"
         - "us-east-1"
+    - name: existing-central-id
+      type: string
+      description: Existing Central ID to reuse (skip Central creation when provided)
+      default: ""
     - name: destroy-central
       type: string
       description: Whether to destroy Central in the finally phase
